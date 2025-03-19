@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Path Drawing App</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <button id="exportButton">Export Waypoints</button>
+    <button id="toggleUnit">Toggle to Meters</button>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let waypoints = [];
+        let unit = 'cm'; // Default unit
+        const scaleFactor = 1; // 1 pixel = 10 cm
+        
+        // Draw grid
+        function drawGrid() {
+            const gridSize = 50; // Adjust grid spacing
+            ctx.strokeStyle = '#ddd';
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        // Handle click to record waypoints
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const convertedX = unit === 'cm' ? x * scaleFactor : x / 100;
+            const convertedY = unit === 'cm' ? y * scaleFactor : y / 100;
+            waypoints.push({ x: convertedX, y: convertedY });
+            drawPath();
+        });
+        
+        function drawPath() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            
+            if (waypoints.length === 0) return;
+            
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(waypoints[0].x / scaleFactor, waypoints[0].y / scaleFactor);
+            waypoints.forEach(point => {
+                ctx.lineTo(point.x / scaleFactor, point.y / scaleFactor);
+            });
+            ctx.stroke();
+        }
+        
+        document.getElementById('exportButton').addEventListener('click', () => {
+            const fileContent = waypoints.map(p => `${p.x},${p.y}`).join('\n');
+            const blob = new Blob([fileContent], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'waypoints.txt';
+            link.click();
+        });
+        
+        document.getElementById('toggleUnit').addEventListener('click', () => {
+            unit = unit === 'cm' ? 'm' : 'cm';
+            document.getElementById('toggleUnit').innerText = `Toggle to ${unit === 'cm' ? 'Meters' : 'Centimeters'}`;
+        });
+        
+        drawGrid();
+    </script>
+</body>
+</html>
