@@ -2,8 +2,8 @@ import RPi.GPIO as GPIO
 import math
 import time
 from CRobot import CRobot
-from collections import deque 
-import mpu6050 
+from collections import deque
+import mpu6050
 
 # ====== ENCODER SETUP ======
 el = 4  # Left encoder pin
@@ -36,7 +36,7 @@ GPIO.add_event_detect(er, GPIO.RISING, callback=encoder_callback_right)
 
 # ====== INITIALIZE ROBOT & SENSORS ======
 LMPins = (8, 11)
-RMPins = (10, 18)
+RMPins = (10, 12)
 PWMPins = (7, 9)
 robot = CRobot(LMPins, RMPins, PWMPins)
 mpu = mpu6050.mpu6050(0x68)  # MPU6050 Gyroscope Initialization
@@ -163,3 +163,36 @@ def move_to_target(target_x, target_y, current_x, current_y, current_angle):
     print(f"Estimated Distance Traveled: {(countl + countr) / 2 * DISTANCE_PER_TICK:.3f} meters")
 
     return target_x, target_y, current_angle
+
+# ====== LOAD WAYPOINTS FROM FILE ======
+file_path = "/home/pi/Downloads/waypoints.txt"
+x_vals, y_vals = [], []
+
+with open(file_path, "r") as file:
+    for line in file:
+        x, y = map(float, line.strip().split(","))
+        x_vals.append(x)
+        y_vals.append(y)
+
+waypoints = list(zip(x_vals, y_vals))
+print("Loaded waypoints:", waypoints)
+
+# ====== NAVIGATION LOOP ======
+current_x, current_y = 0, 0  # Start position
+current_angle = 0  # Assume initial heading is 0°
+
+try:
+    for target_x, target_y in waypoints:
+        current_x, current_y, current_angle = move_to_target(
+            target_x, target_y, current_x, current_y, current_angle
+        )
+
+    print("Path completed! Returning to base...")
+    robot.stop()
+
+except KeyboardInterrupt:
+    print("Program interrupted.")
+
+finally:
+    GPIO.cleanup()
+    print("GPIO cleaned up.")
