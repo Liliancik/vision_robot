@@ -3,7 +3,7 @@ import math
 import time
 from CRobot import CRobot
 from collections import deque
-import mpu6050
+import mpu6050 
 
 # ====== ENCODER SETUP ======
 el = 4  # Left encoder pin
