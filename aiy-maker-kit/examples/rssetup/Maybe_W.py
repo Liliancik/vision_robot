@@ -36,7 +36,7 @@ GPIO.add_event_detect(er, GPIO.RISING, callback=encoder_callback_right)
 
 # ====== INITIALIZE ROBOT & SENSORS ======
 LMPins = (8, 11)
-RMPins = (10, 12)
+RMPins = (10, 18)
 PWMPins = (7, 9)
 robot = CRobot(LMPins, RMPins, PWMPins)
 mpu = mpu6050.mpu6050(0x68)  # MPU6050 Gyroscope Initialization
