@@ -6,7 +6,7 @@ import models
 import time
 import RPi.GPIO as GPIO
 import math
-import signal
+import signal 
 import sys
 from C_Robot import CRobot
 from Turn_BNO085 import Turn_Angle
