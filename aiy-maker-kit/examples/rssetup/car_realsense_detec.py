@@ -12,7 +12,7 @@ labels = utils.read_labels_from_metadata(models.OBJECT_DETECTION_MODEL)
 # Initialize the robot
 robot = CRobot(
     LMPins=(8, 11),  # AIN1, AIN2
-    RMPins=(10, 12),  # BIN1, BIN2
+    RMPins=(10, 18),  # BIN1, BIN2
     PWMPins=(7, 9)  # PWMA, PWMB
 )
 
@@ -49,17 +49,17 @@ try:
             # Determine quadrant
             if x_center < LEFT_BOUND:
                 print("Object on LEFT → Turning RIGHT")
-                robot.right(0.4)
+                robot.left(0.4)
             elif x_center > RIGHT_BOUND:
                 print("Object on RIGHT → Turning LEFT")
-                robot.left(0.4)
+                robot.right(0.4)
             else:
                 print("Object in CENTER → STOP")
                 robot.stop()
 
         else:
-            print("No object detected → Stopping")
-            robot.backward(0.4)
+            print("No object detected → Forward")
+            robot.forward(0.4)
 
         # Draw detected objects on the frame
         vision.draw_objects(frame, objects, labels)

@@ -16,7 +16,7 @@ class CRobot:
         self.LPWM = PWMOutputDevice(PWMPins[0])  # PWMA
         self.RPWM = PWMOutputDevice(PWMPins[1])  # PWMB
 
-    def backward(self, speed=1.0):
+    def forward(self, speed=1.0):
         self.LMForward.on()
         self.LMBackwards.off()
         self.RMForward.on()
@@ -24,7 +24,7 @@ class CRobot:
         self.LPWM.value = speed
         self.RPWM.value = speed
 
-    def forward(self, speed=1.0):
+    def backward(self, speed=1.0):
         self.LMForward.off()
         self.LMBackwards.on()
         self.RMForward.off()
@@ -32,7 +32,7 @@ class CRobot:
         self.LPWM.value = speed
         self.RPWM.value = speed
 
-    def left(self, speed=0.5):
+    def right(self, speed=0.5):
         self.LMForward.off()
         self.LMBackwards.on()
         self.RMForward.on()
@@ -40,7 +40,7 @@ class CRobot:
         self.LPWM.value = speed
         self.RPWM.value= speed
 
-    def right(self, speed=0.5):
+    def left(self, speed=0.5):
         self.LMForward.on()
         self.LMBackwards.off()
         self.RMForward.off()

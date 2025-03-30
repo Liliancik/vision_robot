@@ -10,7 +10,7 @@ el = 4  # Left encoder pin
 er = 26  # Right encoder pin
 
 # ====== ROBOT METRICS ======
-WHEEL_DIAMETER = 0.065  # 65mm wheels
+WHEEL_DIAMETER = 0.065  # 65cm wheels
 WHEEL_CIRCUMFERENCE = math.pi * WHEEL_DIAMETER  # Wheel circumference in meters
 ENCODER_TICKS_PER_REV = 20  # Encoder pulses per full wheel rotation
 DISTANCE_PER_TICK = WHEEL_CIRCUMFERENCE / ENCODER_TICKS_PER_REV  # Distance per tick
@@ -58,9 +58,9 @@ def turn_to_angle(target_angle, current_angle):
     init_angle = 0
 
     # PID Coefficients
-    Kp = 0.6  # Proportional gain (affects speed based on error size)
+    Kp = 0.4  # Proportional gain (affects speed based on error size)
     Ki = 0.01  # Integral gain (corrects small steady-state errors)
-    Kd = 0.4  # Derivative gain (smooths rapid changes)
+    Kd = 0.2  # Derivative gain (smooths rapid changes)
     
     integral = 0
     last_error = 0
@@ -69,7 +69,7 @@ def turn_to_angle(target_angle, current_angle):
     filter_size = deque(maxlen=7)
 
     # Determine Turn Direction
-    turn_direction = 1 if target_angle > current_angle else -1
+    turn_direction = 1 if target_angle <= current_angle else -1
 
     while True:
         current_time = time.time()
@@ -96,8 +96,8 @@ def turn_to_angle(target_angle, current_angle):
         output = Kp * error + Ki * integral + Kd * derivative
 
         # Dynamically adjust speed (ensures smooth turning)
-        speed = abs(output) * 0.02  # Scale speed appropriately
-        speed = min(max(speed, 0.15), 0.4)  # Ensure speed stays within safe range
+        speed = abs(output) * 0.4  # Scale speed appropriately
+        speed = min(max(speed, 0.4), 0.6)  # Ensure speed stays within safe range
 
         # Stop condition (within 2° error threshold)
         if abs(error) < 2:
@@ -105,11 +105,14 @@ def turn_to_angle(target_angle, current_angle):
         
         # Adjust turning speed dynamically based on PID output
         if error > 0:
+            print(f"Current angle: {init_angle:.2f}°, Target angle: {target_angle:.2f}°")
             robot.right(speed)
+            
         else:
             robot.left(speed)
+            print(f"Current angle: {init_angle:.2f}°, Target angle: {target_angle:.2f}°")
 
-        time.sleep(0.01)
+        time.sleep(0.001)
 
     robot.stop()
     return current_angle + init_angle  # Return the new estimated angle
@@ -128,12 +131,21 @@ def move_to_target(target_x, target_y, current_x, current_y, current_angle):
     # Calculate required turn
     target_distance = get_distance(current_x, current_y, target_x, target_y)
     target_angle = get_angle(current_x, current_y, target_x, target_y)
+    
+    target_angle = (target_angle + 360) % 360
+
+    # Normalize current angle
+    current_angle = (current_angle + 360) % 360
+
+    # Shortest path turn logic
+    angle_diff = (target_angle - current_angle + 180) % 360 - 180
+    shortest_target_angle = current_angle + angle_diff
 
     print(f"Moving from ({current_x}, {current_y}) to ({target_x}, {target_y})")
     print(f"Target angle: {target_angle:.2f}°")
 
     # Adjust heading before moving forward
-    current_angle = turn_to_angle(target_angle, current_angle)
+    current_angle = turn_to_angle(shortest_target_angle, current_angle)
 
     # Reset encoder counts
     countl, countr = 0, 0
@@ -142,15 +154,18 @@ def move_to_target(target_x, target_y, current_x, current_y, current_angle):
     target_ticks = int(target_distance / DISTANCE_PER_TICK)
 
     # Start moving forward
-    robot.forward(0.4)
+    robot.forward(0.6)
+    print(f"Target tiks: {target_ticks:.2f}")
+    print(f"tiks: {countr:.2f}")
 
     while (countl + countr) / 2 < target_ticks:
         progress = (countl + countr) / 2
+        print(f"tiks: {countr:.2f}")
 
         # Reduce speed gradually for precision stopping
         if progress >= 0.6 * target_ticks:
-            speed = 0.4 - (0.2 * (progress / target_ticks))
-            speed = max(speed, 0.2)
+            speed = 1 - (0.8 * (progress / target_ticks))
+            speed = max(speed, 0.4)
             robot.forward(speed)
 
         time.sleep(0.01)
@@ -165,14 +180,14 @@ def move_to_target(target_x, target_y, current_x, current_y, current_angle):
     return target_x, target_y, current_angle
 
 # ====== LOAD WAYPOINTS FROM FILE ======
-file_path = "/home/pi/Downloads/waypoints.txt"
+file_path = "/home/pi/Desktop/robot/aiy-maker-kit/examples/rssetup/waypoint.txt"
 x_vals, y_vals = [], []
 
 with open(file_path, "r") as file:
     for line in file:
         x, y = map(float, line.strip().split(","))
-        x_vals.append(x)
-        y_vals.append(y)
+        x_vals.append(x/2)
+        y_vals.append(y/2)
 
 waypoints = list(zip(x_vals, y_vals))
 print("Loaded waypoints:", waypoints)

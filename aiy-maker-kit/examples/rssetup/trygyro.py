@@ -127,8 +127,8 @@ with open(file_path, "r") as file:
             x_vals.append(0)
             y_vals.append(0)
         else:
-            x_vals.append(x / 100)
-            y_vals.append(y / 100)
+            x_vals.append(x)
+            y_vals.append(y)
         num += 1
 
 waypoints = list(zip(x_vals, y_vals))  # Pair x, y coordinates

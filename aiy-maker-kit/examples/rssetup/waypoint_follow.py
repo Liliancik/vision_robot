@@ -16,8 +16,8 @@ x_vals, y_vals = [], []
 with open(file_path, "r") as file:
     for line in file:
         x, y = map(int, line.strip().replace(" ", "").split(","))  # Remove spaces and split
-        x_vals.append(x/100)
-        y_vals.append(y/100)
+        x_vals.append(x/10)
+        y_vals.append(y/10)
 
 waypoints = list(zip(x_vals, y_vals))  # Pair x, y coordinates as waypoints
 print("Loaded waypoints:", waypoints)
